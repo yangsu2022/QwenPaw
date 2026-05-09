@@ -111,3 +111,6 @@ src/.hypothesis/
 
 # Worktrees
 .worktrees/
+
+OVMS_integration.md
+logs-ovms/

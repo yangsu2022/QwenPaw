@@ -39,6 +39,7 @@ from .skills_manager import (
 from .tool_guard_mixin import ToolGuardMixin
 from .tools import (
     browser_use,
+    tavily_search,
     delegate_external_agent,
     chat_with_agent,
     check_agent_task,
@@ -265,6 +266,7 @@ class QwenPawAgent(ToolGuardMixin, ReActAgent):
             "grep_search": grep_search,
             "glob_search": glob_search,
             "browser_use": browser_use,
+            "tavily_search": tavily_search,
             "desktop_screenshot": desktop_screenshot,
             "view_image": view_image,
             "view_video": view_video,
@@ -702,10 +704,37 @@ class QwenPawAgent(ToolGuardMixin, ReActAgent):
                         except (ValueError, TypeError):
                             pass
 
+    @staticmethod
+    def _rewrite_legacy_news_tool_call(tool_call: dict[str, Any]) -> None:
+        """Rewrite legacy invalid `news` function calls to tavily_search."""
+        if str(tool_call.get("name", "")).strip().lower() != "news":
+            return
+
+        query = ""
+        tool_input = tool_call.get("input")
+        if isinstance(tool_input, dict):
+            raw_query = tool_input.get("query") or tool_input.get("q")
+            if isinstance(raw_query, str):
+                query = raw_query.strip()
+        elif isinstance(tool_input, str):
+            query = tool_input.strip()
+
+        tool_call["name"] = "tavily_search"
+        tool_call["input"] = {
+            "query": query or "latest news",
+            "max_results": 5,
+            "topic": "news",
+        }
+        logger.warning(
+            "Rewrote legacy tool call 'news' to tavily_search: %s",
+            tool_call["input"],
+        )
+
     async def _acting(self, tool_call) -> dict | None:
         """Check plan tool gate before delegating to ToolGuardMixin."""
         from ..plan.hints import check_plan_tool_gate
 
+        self._rewrite_legacy_news_tool_call(tool_call)
         tool_name = str(tool_call.get("name", ""))
 
         if tool_name in self._PLAN_TOOLS_WITH_JSON_ARGS:

@@ -328,6 +328,9 @@ export function ProviderConfigModal({
     if (provider.id === "ollama") {
       return t("models.ollamaEndpointHint");
     }
+    if (provider.id === "ovms") {
+      return t("models.ovmsEndpointHint");
+    }
     if (provider.id === "lmstudio") {
       return t("models.lmstudioEndpointHint");
     }
@@ -357,6 +360,9 @@ export function ProviderConfigModal({
     }
     if (provider.id === "ollama") {
       return "http://localhost:11434";
+    }
+    if (provider.id === "ovms") {
+      return "http://localhost:8000/v3";
     }
     if (provider.id === "lmstudio") {
       return "http://localhost:1234/v1";

@@ -1041,6 +1041,30 @@ async def _action_start(
             json.dumps(result, ensure_ascii=False, indent=2),
         )
     except Exception as e:
+        err_text = str(e)
+        # Some Windows environments return HTTP 403 on local CDP probe even
+        # though the browser window appears. Retry once in direct Playwright
+        # mode so visual debugging can proceed without requiring prompt tweaks.
+        if (
+            not bool(private_mode)
+            and "HTTP Error 403" in err_text
+            and "Timed out waiting for Chrome CDP endpoint" in err_text
+        ):
+            logger.warning(
+                "browser_use start fallback: managed CDP failed with 403, retrying private_mode",
+            )
+            try:
+                await _action_stop(state)
+            except Exception:
+                _reset_browser_state(state)
+            return await _action_start(
+                state,
+                headed=headed,
+                cdp_port=0,
+                private_mode=True,
+                browser_args=browser_args,
+                executable_path=executable_path,
+            )
         return _tool_response(
             json.dumps(
                 {"ok": False, "error": f"Browser start failed: {e!s}"},
@@ -3248,6 +3272,7 @@ async def browser_use(  # pylint: disable=R0911,R0912
     text_gone: str = "",
     frame_selector: str = "",
     headed: bool = False,
+    headless: Optional[bool] = None,
     cdp_port: int = 0,
     private_mode: bool = False,
     browser_args: str = "",
@@ -3383,6 +3408,10 @@ async def browser_use(  # pylint: disable=R0911,R0912
         headed (bool):
             When True with action=start, launch a visible browser window
             (non-headless). User can see the real browser. Default False.
+        headless (Optional[bool]):
+            Alias for headed on action=start. If set, it overrides headed
+            with headed = not headless. For visual debugging, pass
+            headless=False.
         cdp_port (int):
             When > 0 with action=start, use the specified CDP port. When 0,
             QwenPaw chooses a free local port automatically for managed CDP.
@@ -3437,6 +3466,10 @@ async def browser_use(  # pylint: disable=R0911,R0912
     pages = state.get("pages") or {}
     if page_id == "default" and current and current in pages:
         page_id = current
+
+    # Accept either style for start action: headed=True or headless=False.
+    if action == "start" and headless is not None:
+        headed = not bool(headless)
 
     try:
         if action == "start":

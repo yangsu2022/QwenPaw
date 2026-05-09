@@ -10,6 +10,7 @@ const PROVIDER_LETTER_COLORS: Record<string, string> = {
   "kimi-intl": "#000000",
   anthropic: "#D97757",
   ollama: "#1A1A1A",
+  ovms: "#0071C5",
   "minimax-cn": "#1A1A2E",
   minimax: "#1A1A2E",
   openai: "#10A37F",

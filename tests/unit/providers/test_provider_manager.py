@@ -15,6 +15,7 @@ from qwenpaw.exceptions import ProviderError
 from qwenpaw.providers.anthropic_provider import AnthropicProvider
 from qwenpaw.config.config import ModelSlotConfig
 from qwenpaw.providers.openai_provider import OpenAIProvider
+from qwenpaw.providers.ovms_provider import OVMSProvider
 from qwenpaw.providers.provider import ModelInfo
 from qwenpaw.providers.provider_manager import ProviderManager
 from qwenpaw.local_models.llamacpp import LlamaCppServerSetupResult
@@ -127,6 +128,27 @@ def test_builtin_zhipu_providers_registered(isolated_secret_dir) -> None:
             "glm-5-turbo",
             "glm-5v-turbo",
         ]
+
+
+def test_builtin_ovms_provider_registered(isolated_secret_dir) -> None:
+    manager = ProviderManager()
+
+    provider = manager.get_provider("ovms")
+
+    assert provider is not None
+    assert isinstance(provider, OVMSProvider)
+    assert provider.name == "OpenVINO Model Server"
+    assert provider.base_url == "http://localhost:8000/v3"
+    assert provider.is_local is True
+    assert provider.require_api_key is False
+    assert provider.support_model_discovery is True
+    assert provider.generate_kwargs == {"max_tokens": 1024}
+    assert [model.id for model in provider.models] == [
+        "OpenVINO/gpt-oss-20b-int4-ov",
+        "Junrui2021/Qwen3-VL-8B-Instruct-int4",
+        "OpenVINO/Qwen3-4B-int4-ov",
+        "OpenVINO/Qwen3-8B-int4-ov",
+    ]
 
 
 async def test_add_custom_provider_and_reload_from_storage(

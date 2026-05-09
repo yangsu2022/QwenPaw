@@ -29,6 +29,7 @@ from .agent_management import (
     check_agent_task,
 )
 from .delegate_external_agent import delegate_external_agent
+from .tavily_search import tavily_search
 
 __all__ = [
     "execute_python_code",
@@ -50,6 +51,7 @@ __all__ = [
     "set_user_timezone",
     "get_token_usage",
     "delegate_external_agent",
+    "tavily_search",
     "list_agents",
     "chat_with_agent",
     "submit_to_agent",

@@ -23,6 +23,7 @@ from .anthropic_provider import AnthropicProvider
 from .gemini_provider import GeminiProvider
 from .ollama_provider import OllamaProvider
 from .openai_provider import OpenAIProvider
+from .ovms_provider import OVMSProvider
 from .lmstudio_provider import LMStudioProvider
 from .provider import (
     ModelInfo,
@@ -586,6 +587,37 @@ PROVIDER_QWENPAW = OpenAIProvider(
     require_api_key=False,
 )
 
+OVMS_MODELS: List[ModelInfo] = [
+    ModelInfo(
+        id="OpenVINO/gpt-oss-20b-int4-ov",
+        name="OpenVINO/gpt-oss-20b-int4-ov",
+        supports_image=False,
+        supports_video=False,
+        probe_source="default",
+    ),
+    ModelInfo(
+        id="Junrui2021/Qwen3-VL-8B-Instruct-int4",
+        name="Junrui2021/Qwen3-VL-8B-Instruct-int4",
+        supports_image=True,
+        supports_video=False,
+        probe_source="default",
+    ),
+    ModelInfo(
+        id="OpenVINO/Qwen3-4B-int4-ov",
+        name="OpenVINO/Qwen3-4B-int4-ov",
+        supports_image=False,
+        supports_video=False,
+        probe_source="default",
+    ),
+    ModelInfo(
+        id="OpenVINO/Qwen3-8B-int4-ov",
+        name="OpenVINO/Qwen3-8B-int4-ov",
+        supports_image=False,
+        supports_video=False,
+        probe_source="default",
+    ),
+]
+
 PROVIDER_OPENAI = OpenAIProvider(
     id="openai",
     name="OpenAI",
@@ -690,6 +722,18 @@ PROVIDER_OLLAMA = OllamaProvider(
     generate_kwargs={"max_tokens": None},
 )
 
+PROVIDER_OVMS = OVMSProvider(
+    id="ovms",
+    name="OpenVINO Model Server",
+    base_url="http://localhost:8000/v3",
+    is_local=True,
+    require_api_key=False,
+    api_key_prefix="",
+    models=OVMS_MODELS,
+    support_model_discovery=True,
+    generate_kwargs={"max_tokens": 1024},
+)
+
 PROVIDER_OPENROUTER = OpenRouterProvider(
     id="openrouter",
     name="OpenRouter",
@@ -774,6 +818,7 @@ class ProviderManager:  # pylint: disable=too-many-public-methods
     def _init_builtins(self):
         self._add_builtin(PROVIDER_QWENPAW)
         self._add_builtin(PROVIDER_OLLAMA)
+        self._add_builtin(PROVIDER_OVMS)
         self._add_builtin(PROVIDER_LMSTUDIO)
         self._add_builtin(PROVIDER_OPENROUTER)
         self._add_builtin(PROVIDER_MODELSCOPE)
@@ -1347,6 +1392,8 @@ class ProviderManager:  # pylint: disable=too-many-public-methods
             return GeminiProvider.model_validate(data)
         if provider_id == "ollama":
             return OllamaProvider.model_validate(data)
+        if provider_id == "ovms":
+            return OVMSProvider.model_validate(data)
         return OpenAIProvider.model_validate(data)
 
     def save_active_model(self, active_model: ModelSlotConfig):

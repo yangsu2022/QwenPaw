@@ -858,6 +858,7 @@
     "azureEndpointHint": "Azure OpenAI 端点，例如 https://<resource>.openai.azure.com/openai/v1",
     "anthropicEndpointHint": "Anthropic 端点，例如 https://api.anthropic.com",
     "ollamaEndpointHint": "Ollama 端点，例如 http://localhost:11434",
+    "ovmsEndpointHint": "OVMS 端点，例如 http://localhost:8000/v3",
     "lmstudioEndpointHint": "LM Studio 端点，例如 http://localhost:1234/v1",
     "apiEndpointHint": "API 端点，例如 https://api.example.com",
     "pleaseEnterBaseURL": "请输入 API 基础 URL",
